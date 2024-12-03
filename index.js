@@ -21,11 +21,29 @@ app.get('/tasks', async (req, res) => {
 
 app.post('/tasks', async (req, res) => {
     try {
-        const newTask = new TaskModel(req.body);
+        const new_task = new TaskModel(req.body);
 
-        await newTask.save();
+        await new_task.save();
 
-        res.status(201).send(newTask);
+        res.status(201).send(new_task);
+    } catch (e) {
+        res.status(500).send(e.message);
+    }
+});
+
+app.delete('/tasks/:id', async (req, res) => {
+    try {
+        const task_id = req.params.id;
+
+        const task_to_delete = await TaskModel.findById(task_id);
+
+        if (!task_to_delete) {
+            return res.status(500).send('Tarefa não encontrada.');
+        }
+
+        const deleted_task = await TaskModel.findByIdAndDelete(task_id);
+
+        res.status(200).send(deleted_task);
     } catch (e) {
         res.status(500).send(e.message);
     }
