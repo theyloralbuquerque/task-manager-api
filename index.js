@@ -26,10 +26,10 @@ app.get('/tasks/:id', async (req, res) => {
         const task = await TaskModel.findById(task_id);
 
         if (!task) {
-            res.status(404).send('Tarefa não encontrada');
+            return res.status(404).send('Tarefa não encontrada');
         }
 
-        res.status(200).send(task);
+        return res.status(200).send(task);
     } catch (e) {
         res.status(500).send(e.message);
     }
@@ -44,6 +44,33 @@ app.post('/tasks', async (req, res) => {
         res.status(201).send(new_task);
     } catch (e) {
         res.status(500).send(e.message);
+    }
+});
+
+app.patch('/tasks/:id', async (req, res) => {
+    try {
+        const task_id = req.params.id;
+        const task_data = req.body;
+
+        const taskToUpdate = await TaskModel.findById(task_id);
+
+        const allowedUpdates = ['isCompleted'];
+        const requestedUpdates = Object.keys(req.body);
+
+        for (const update of requestedUpdates) {
+            if (allowedUpdates.includes(update)) {
+                taskToUpdate[update] = task_data[update];
+            } else {
+                return res
+                    .status(500)
+                    .send('Um ou mais campos inseridos não são editáveis');
+            }
+        }
+
+        await taskToUpdate.save();
+        return res.status(201).send(updated_task);
+    } catch (e) {
+        return res.status(500).send(e.message);
     }
 });
 
