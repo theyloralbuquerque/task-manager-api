@@ -12,8 +12,24 @@ connectTodatabase();
 
 app.get('/tasks', async (req, res) => {
     try {
-        const tasks = await TaskModel.finfind({});
+        const tasks = await TaskModel.find({});
         res.status(200).send(tasks);
+    } catch (e) {
+        res.status(500).send(e.message);
+    }
+});
+
+app.get('/tasks/:id', async (req, res) => {
+    try {
+        const task_id = req.params.id;
+
+        const task = await TaskModel.findById(task_id);
+
+        if (!task) {
+            res.status(404).send('Tarefa não encontrada');
+        }
+
+        res.status(200).send(task);
     } catch (e) {
         res.status(500).send(e.message);
     }
@@ -38,7 +54,7 @@ app.delete('/tasks/:id', async (req, res) => {
         const task_to_delete = await TaskModel.findById(task_id);
 
         if (!task_to_delete) {
-            return res.status(500).send('Tarefa não encontrada.');
+            return res.status(404).send('Tarefa não encontrada.');
         }
 
         const deleted_task = await TaskModel.findByIdAndDelete(task_id);
