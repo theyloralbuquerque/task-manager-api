@@ -1,0 +1,88 @@
+const express = require('express');
+const TaskModel = require('../models/task.model');
+
+const router = express.Router();
+
+router.get('/', async (req, res) => {
+    try {
+        const tasks = await TaskModel.find({});
+        res.status(200).send(tasks);
+    } catch (e) {
+        res.status(500).send(e.message);
+    }
+});
+
+router.get('/:id', async (req, res) => {
+    try {
+        const task_id = req.params.id;
+
+        const task = await TaskModel.findById(task_id);
+
+        if (!task) {
+            return res.status(404).send('Tarefa não encontrada');
+        }
+
+        return res.status(200).send(task);
+    } catch (e) {
+        res.status(500).send(e.message);
+    }
+});
+
+router.post('/', async (req, res) => {
+    try {
+        const new_task = new TaskModel(req.body);
+
+        await new_task.save();
+
+        res.status(201).send(new_task);
+    } catch (e) {
+        res.status(500).send(e.message);
+    }
+});
+
+router.patch('/:id', async (req, res) => {
+    try {
+        const task_id = req.params.id;
+        const task_data = req.body;
+
+        const taskToUpdate = await TaskModel.findById(task_id);
+
+        const allowedUpdates = ['isCompleted'];
+        const requestedUpdates = Object.keys(req.body);
+
+        for (const update of requestedUpdates) {
+            if (allowedUpdates.includes(update)) {
+                taskToUpdate[update] = task_data[update];
+            } else {
+                return res
+                    .status(500)
+                    .send('Um ou mais campos inseridos não são editáveis');
+            }
+        }
+
+        await taskToUpdate.save();
+        return res.status(201).send(updated_task);
+    } catch (e) {
+        return res.status(500).send(e.message);
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const task_id = req.params.id;
+
+        const task_to_delete = await TaskModel.findById(task_id);
+
+        if (!task_to_delete) {
+            return res.status(404).send('Tarefa não encontrada.');
+        }
+
+        const deleted_task = await TaskModel.findByIdAndDelete(task_id);
+
+        res.status(200).send(deleted_task);
+    } catch (e) {
+        res.status(500).send(e.message);
+    }
+});
+
+module.exports = router;
