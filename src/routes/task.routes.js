@@ -10,19 +10,7 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
-    try {
-        const task_id = req.params.id;
-
-        const task = await TaskModel.findById(task_id);
-
-        if (!task) {
-            return res.status(404).send('Tarefa não encontrada');
-        }
-
-        return res.status(200).send(task);
-    } catch (e) {
-        res.status(500).send(e.message);
-    }
+    return new TaskController(req, res).getById();
 });
 
 router.post('/', async (req, res) => {
